@@ -1,0 +1,48 @@
+---
+#Play1
+- name: Install Python3, Docker, Bamboo, sonarQube on local server
+  hosts: localhost
+  connection: local
+  become: yes
+  become_user: root
+  tasks:
+    - name: Install Python3
+      vars:
+        ansible_python_interpreter: /usr/bin/python2
+      apt:
+        name: python3
+        update_cache: yes
+        state: present 
+    - name: Install Docker
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
+      apt:
+        name: docker
+        update_cache: yes
+        state: present #latest version of the software
+    - name: start docker daemon
+      systemd:
+        name: docker
+        state: started
+    - name: Pull bamboo image
+      docker_image:
+        name: atlassian/bamboo-server
+        source: pull
+      #command: docker pull atlassian/bamboo-server    
+    - name: Pull sonarQube image 
+      docker_image:
+        name: sonarqube
+        source: pull
+      #command: docker pull sonarqube
+
+#Play2
+- name: Running sonarqube and Bamboo containers
+  hosts: localhost
+  connection: local
+  become: yes
+  become_user: root
+  tasks:
+    - name: Running bamboo
+      command: docker run -d -p 9002:8085 atlassian/bamboo-server
+    - name: Running sonarqube container
+      command: docker run -d sonarqube
